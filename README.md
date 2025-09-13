@@ -1,2 +1,3 @@
-# rl_sandbox
-🥕🧠 Implementation of various reinforcement learning methods
+# 🥕🧠 `rl_sandbox`
+
+ Implementation of various reinforcement learning methods
