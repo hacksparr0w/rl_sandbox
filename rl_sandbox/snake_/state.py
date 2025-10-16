@@ -11,20 +11,28 @@ from .utility import (
 )
 
 
+class Snake:
+    direction: Vec2i
+    positions: list[Vec2i]
+
+    def __init__(self, direction: Vec2i, positions: list[Vec2i]) -> None:
+        self.direction = direction
+        self.positions = positions
+
+
+class SnakeAction:
+    UP = auto()
+    DOWN = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+
 class PlayingState:
     width: int
     height: int
     apple_position: Vec2i
-    snake_direction: Vec2i
-    snake_positions: list[Vec2i]
+    snakes: dict[str, Snake]
     prng: random.Random
-
-    class Action(StrEnum):
-        UP = auto()
-        DOWN = auto()
-        LEFT = auto()
-        RIGHT = auto()
-        IDLE = auto()
 
     def __init__(
         self,
@@ -32,81 +40,76 @@ class PlayingState:
         width: int,
         height: int,
         apple_position: Vec2i,
-        snake_direction: Vec2i,
-        snake_positions: list[Vec2i],
+        snakes: dict[str, Snake],
         prng: random.Random
     ) -> None:
         self.width = width
         self.height = height
         self.apple_position = apple_position
-        self.snake_direction = snake_direction
-        self.snake_positions = snake_positions
+        self.snakes = snakes
         self.prng = prng
 
-    def step(self, action: Action) -> State:
+    def update(self, actions: dict[str, SnakeAction]) -> State:
         width = self.width
         height = self.height
         current_apple_position = self.apple_position
-        current_snake_direction = self.snake_direction
-        current_snake_positions = self.snake_positions
+        current_snakes = self.snakes
         prng = self.prng
         bounds = ((0, 0), (width, height))
-        directions = {
-            self.Action.UP: (0, -1),
-            self.Action.DOWN: (0, 1),
-            self.Action.LEFT: (-1, 0),
-            self.Action.RIGHT: (1, 0),
-            self.Action.IDLE: current_snake_direction
-        }
 
-        updated_snake_direction = directions[action]
+        updated_snakes = {}
 
-        snake_direction_diff = vec2i_add(
-            current_snake_direction,
-            updated_snake_direction
-        )
+        for snake_id, snake in current_snakes.items():
 
-        if snake_direction_diff == (0, 0):
-            updated_snake_direction = current_snake_direction
 
-        current_snake_head = current_snake_positions[0]
-        updated_snake_head = vec2i_add(
-            current_snake_head,
-            updated_snake_direction
-        )
+        # updated_snake_direction = directions[action]
 
-        if not check_bounds(bounds, updated_snake_head):
-            return LostState()
+        # snake_direction_diff = vec2i_add(
+        #     current_snake_direction,
+        #     updated_snake_direction
+        # )
 
-        if updated_snake_head == current_apple_position:
-            updated_snake_positions = \
-                [updated_snake_head] + current_snake_positions
+        # if snake_direction_diff == (0, 0):
+        #     updated_snake_direction = current_snake_direction
 
-            if len(updated_snake_positions) == (width * height):
-                return WonState()
+        # current_snake_head = current_snake_positions[0]
+        # updated_snake_head = vec2i_add(
+        #     current_snake_head,
+        #     updated_snake_direction
+        # )
 
-            updated_apple_position = random_vec2i(
-                bounds,
-                exclude=updated_snake_positions,
-                prng=prng
-            )
-        else:
-            updated_snake_positions = \
-                [updated_snake_head] + current_snake_positions[:-1]
+        # if not check_bounds(bounds, updated_snake_head):
+        #     return LostState()
 
-            updated_apple_position = current_apple_position
+        # if updated_snake_head == current_apple_position:
+        #     updated_snake_positions = \
+        #         [updated_snake_head] + current_snake_positions
 
-        if check_duplicity(updated_snake_positions):
-            return LostState()
+        #     if len(updated_snake_positions) == (width * height):
+        #         return WonState()
 
-        return PlayingState(
-            width=width,
-            height=height,
-            apple_position=updated_apple_position,
-            snake_direction=updated_snake_direction,
-            snake_positions=updated_snake_positions,
-            prng=prng
-        )
+        #     updated_apple_position = random_vec2i(
+        #         bounds,
+        #         exclude=updated_snake_positions,
+        #         prng=prng
+        #     )
+        # else:
+        #     updated_snake_positions = \
+        #         [updated_snake_head] + current_snake_positions[:-1]
+
+        #     updated_apple_position = current_apple_position
+
+        # if check_duplicity(updated_snake_positions):
+        #     return LostState()
+
+        # return PlayingState(
+        #     width=width,
+        #     height=height,
+        #     apple_position=updated_apple_position,
+        #     snake_direction=updated_snake_direction,
+        #     snake_positions=updated_snake_positions,
+        #     prng=prng
+        # )
 
     @classmethod
     def random_start(
@@ -175,4 +178,4 @@ class WonState:
         raise TypeError
 
 
-type State = Union[PlayingState, LostState, WonState]
+type State = Union[LostState, PlayingState, WonState]
