@@ -1,7 +1,1 @@
-.cache
-.config
-.ipynb_checkpoints
-.ipython
-.jupyter
-.local
-.npm
+__pycache__

@@ -73,8 +73,6 @@ def learn_reinforce_with_baseline(
 
             value.backward()
 
-            progress.append(delta)
-
             for parameter in evaluator.parameters():
                 parameter.data += alpha_evaluator * delta * parameter.grad
 
