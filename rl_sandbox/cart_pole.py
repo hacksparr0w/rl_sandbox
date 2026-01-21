@@ -46,25 +46,28 @@ def evaluate_policy(policy, environment, gamma):
 
 def learn_reinforce_with_baseline(
     *,
-    episodes: int = 4000,
+    episodes: int = 5000,
     alpha_policy: float = 1e-5,
     alpha_evaluator: float = 1e-5,
     gamma: float = 1
 ) -> None:
     policy = torch.nn.Sequential(
-        torch.nn.Linear(4, 32),
-        torch.nn.Linear(32, 2),
+        torch.nn.Linear(4, 64),
+        torch.nn.Linear(64, 2),
         torch.nn.Softmax(dim=-1)
     )
 
     evaluator = torch.nn.Sequential(
-        torch.nn.Linear(4, 32),
-        torch.nn.Linear(32, 1)
+        torch.nn.Linear(4, 64),
+        torch.nn.Linear(64, 1)
     )
 
     environment = gymnasium.make("CartPole-v1")
 
+    progress = []
+
     for _ in range(episodes):
+        print(_)
         steps = evaluate_policy(policy, environment, gamma)
 
         for t, (observation, _, _, returns, gradients) in enumerate(steps):
@@ -81,6 +84,18 @@ def learn_reinforce_with_baseline(
             for parameter, gradient in zip(policy.parameters(), gradients):
                 parameter.data += \
                     alpha_policy * (gamma ** t) * delta * gradient
+
+        progress.append(steps[0][3])
+
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(progress)
+    plt.show()
+
+    environment = gymnasium.make("CartPole-v1", render_mode="human")
+
+    evaluate_policy(policy, environment, gamma)
 
 
 learn_reinforce_with_baseline()
